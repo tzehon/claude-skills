@@ -20,7 +20,9 @@ if [ $# -lt 1 ]; then
   echo "Usage: $0 <skill-name>"
   echo ""
   echo "Available skills:"
-  ls -1 "$SKILLS_DIR" 2>/dev/null || echo "  (none)"
+  for dir in "$SKILLS_DIR"/*/; do
+    [ -d "$dir" ] && echo "  $(basename "$dir")"
+  done
   exit 1
 fi
 
