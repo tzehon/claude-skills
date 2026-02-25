@@ -1,5 +1,5 @@
 ---
-name: MongoDB Data Modelling
+name: mongodb-data-modelling
 description: |
   MongoDB schema design expert. Guides users through the 3-phase schema design
   process (identify workload, map relationships, apply patterns) and produces
@@ -7,12 +7,13 @@ description: |
   rules, and trade-off analysis.
 
   Trigger: "design a MongoDB schema", "MongoDB data model", "document schema",
-  "embed vs reference", "MongoDB design patterns"
+  "embed vs reference", "MongoDB design patterns", "should I embed or reference",
+  "how to structure my MongoDB collections", "MongoDB collection design"
 
   Not for: SQL/relational database design, MongoDB administration or ops,
   query optimization without schema context
 metadata:
-  version: "1.0"
+  version: "1.1"
   author: claude-skills
   tags:
     - mongodb
@@ -384,221 +385,20 @@ Only `name` and `address` are embedded. Fields like `loyalty_points`, `account_t
 
 ---
 
-### 8. Document Versioning Pattern
+### Additional Patterns (8-15)
 
-**Problem**: Need to maintain historical versions of documents for auditing, compliance, or undo functionality.
+For less common but specialized patterns, consult `references/advanced-patterns.md`:
 
-**Solution**: Use two collections — current (latest version) and history (all previous versions). Add a `version` field.
-
-**When to use**: Insurance policies, legal documents, content management, regulatory compliance.
-
-**Current collection (policies)**:
-```json
-{
-  "_id": "policy1",
-  "policyNumber": "POL-2024-001",
-  "holderName": "Jane Smith",
-  "coverageAmount": 500000,
-  "version": 3,
-  "lastModified": ISODate("2024-01-15T10:30:00Z")
-}
-```
-
-**History collection (policiesHistory)**:
-```json
-{
-  "_id": ObjectId("..."),
-  "docId": "policy1",
-  "policyNumber": "POL-2024-001",
-  "holderName": "Jane Smith",
-  "coverageAmount": 250000,
-  "version": 1,
-  "lastModified": ISODate("2023-06-01T09:00:00Z")
-}
-```
-
-**Update workflow**: Copy current to history, then update current with incremented version.
-
-**Trade-offs**: Increased storage; write overhead; not suitable for high-churn documents.
-
----
-
-### 9. Schema Versioning Pattern
-
-**Problem**: Database schema must evolve without application downtime. Old and new document structures coexist.
-
-**Solution**: Add a `schema_version` field. Implement application-level handlers for each version. Migrate lazily or eagerly.
-
-**When to use**: Any evolving production system; frequent schema changes; zero-downtime deployments.
-
-```json
-// Version 1
-{ "_id": "user1", "name": "Anakin Skywalker", "home": "503-555-0000", "work": "503-555-0010" }
-
-// Version 2 (restructured with Attribute Pattern)
-{
-  "_id": "user2", "schema_version": 2, "name": "Anakin Skywalker",
-  "contact_methods": [
-    { "type": "work", "value": "503-555-0210" },
-    { "type": "mobile", "value": "503-555-0220" },
-    { "type": "twitter", "value": "@anakinskywalker" }
-  ]
-}
-```
-
-**Migration strategies**: Lazy (migrate on read/write), eager (batch update all), or no migration.
-
-**Trade-offs**: App must handle multiple versions; may need dual indexes during migration.
-
----
-
-### 10. Polymorphic Pattern
-
-**Problem**: Documents of different types with similar-but-not-identical structures need to be queried together.
-
-**Solution**: Store all types in a single collection with a discriminator field (`type`). Shared fields use consistent names.
-
-**When to use**: Product catalogs (books, electronics, clothing), athletes in different sports, vehicles.
-
-```json
-// Tennis player
-{ "_id": "a1", "type": "tennis", "name": "Serena Williams", "ranking": 1, "grandSlams": 23 }
-
-// Soccer player
-{ "_id": "a2", "type": "soccer", "name": "Lionel Messi", "ranking": 1, "goalsScored": 800 }
-```
-
-**Partial index for type-specific queries**:
-```javascript
-db.athletes.createIndex({ goalsScored: -1 }, { partialFilterExpression: { type: "soccer" } })
-```
-
-**Trade-offs**: Application must handle different document shapes; not ideal if types have no fields in common.
-
----
-
-### 11. Inheritance Pattern
-
-**Problem**: Object-oriented class hierarchies need to be persisted in MongoDB.
-
-**Solution**: Store the full inheritance hierarchy in a single collection. Each document contains fields from its class and all parent classes. Use a discriminator field for the concrete type.
-
-**When to use**: OOP applications with class hierarchies needing polymorphic queries.
-
-```json
-// Car (extends Vehicle)
-{ "_id": "v1", "type": "car", "make": "Toyota", "model": "Camry", "year": 2024, "numDoors": 4 }
-
-// Truck (extends Vehicle)
-{ "_id": "v2", "type": "truck", "make": "Ford", "model": "F-150", "year": 2024, "towingCapacityKg": 6000 }
-```
-
----
-
-### 12. Preallocation Pattern
-
-**Problem**: Known data structures that will be filled incrementally (e.g., seating charts, game boards).
-
-**Solution**: Pre-create the document structure with empty/default values for O(1) index-based access.
-
-**When to use**: Theater seating, game boards, calendars, inventory grids.
-
-```json
-{
-  "_id": "show1",
-  "theater": "Main Theater",
-  "seats": [
-    [
-      { "row": "A", "number": 1, "status": "available" },
-      { "row": "A", "number": 2, "status": "reserved" }
-    ],
-    [
-      { "row": "B", "number": 1, "status": "available" },
-      { "row": "B", "number": 2, "status": "available" }
-    ]
-  ]
-}
-```
-
-Finding seat "B2" is `seats[1][1]` — O(1) lookup instead of linear search.
-
-**Trade-offs**: Empty positions consume storage; larger documents increase RAM usage.
-
----
-
-### 13. Slowly Changing Dimensions Pattern
-
-**Problem**: Dimension attributes change over time and historical values must be preserved for analytics.
-
-**Solution**: Apply SCD types from data warehousing:
-
-**Type 2 (most common) — New record per change with date ranges**:
-```json
-{ "customerId": "cust1", "name": "Jane", "address": "123 Main St", "effectiveFrom": ISODate("2020-01-01"), "effectiveTo": ISODate("2024-01-14"), "isCurrent": false }
-{ "customerId": "cust1", "name": "Jane", "address": "456 Oak Ave", "effectiveFrom": ISODate("2024-01-15"), "effectiveTo": null, "isCurrent": true }
-```
-
-**Point-in-time query**:
-```javascript
-db.customers.findOne({
-  customerId: "cust1",
-  effectiveFrom: { $lte: targetDate },
-  $or: [{ effectiveTo: { $gt: targetDate } }, { effectiveTo: null }]
-})
-```
-
----
-
-### 14. Archive Pattern
-
-**Problem**: Collections accumulate rarely-accessed data that degrades performance.
-
-**Solution**: Move old documents to an archive collection or cheaper storage tier.
-
-```javascript
-// Archive orders older than 2 years
-const cutoff = new Date(); cutoff.setFullYear(cutoff.getFullYear() - 2);
-db.orders.aggregate([
-  { $match: { date: { $lt: cutoff }, status: "delivered" } },
-  { $addFields: { archivedDate: new Date() } },
-  { $merge: { into: "ordersArchive", whenMatched: "keepExisting" } }
-]);
-db.orders.deleteMany({ date: { $lt: cutoff }, status: "delivered" });
-```
-
-**Query across both with `$unionWith`**:
-```javascript
-db.orders.aggregate([
-  { $match: { customerId: "cust1" } },
-  { $unionWith: { coll: "ordersArchive", pipeline: [{ $match: { customerId: "cust1" } }] } },
-  { $sort: { date: -1 } }
-])
-```
-
----
-
-### 15. Single Collection Pattern
-
-**Problem**: Multiple related entity types are frequently queried together, requiring expensive `$lookup` operations.
-
-**Solution**: Store multiple entity types in a single collection with composite partition/sort keys and a type discriminator.
-
-```json
-// Product
-{ "pk": "PRODUCT#prod1", "sk": "METADATA", "type": "product", "name": "Widget", "price": 29.99 }
-
-// Review for that product
-{ "pk": "PRODUCT#prod1", "sk": "REVIEW#2024-01-15#user1", "type": "review", "rating": 5, "text": "Great!" }
-```
-
-**Index**: `{ pk: 1, sk: 1 }`
-
-**Query product + all reviews in one query**:
-```javascript
-db.entities.find({ pk: "PRODUCT#prod1" }).sort({ sk: 1 })
-```
-
-**Trade-offs**: Increased schema complexity; harder ad-hoc queries; requires upfront key design.
+| Pattern | When to Use |
+|---------|-------------|
+| **8. Document Versioning** | Audit trails, compliance, undo — two collections (current + history) with version field |
+| **9. Schema Versioning** | Zero-downtime schema evolution — `schema_version` field with lazy/eager migration |
+| **10. Polymorphic** | Different document types queried together — discriminator `type` field, partial indexes |
+| **11. Inheritance** | OOP class hierarchies — single collection, all fields from class + parents |
+| **12. Preallocation** | Known structures filled incrementally — pre-create with defaults for O(1) access |
+| **13. Slowly Changing Dimensions** | Historical dimension values for analytics — SCD Type 2 with date ranges |
+| **14. Archive** | Move old data to archive collection — `$merge` to archive, `$unionWith` to query both |
+| **15. Single Collection** | Multiple entity types queried together — composite pk/sk keys, type discriminator |
 
 ---
 
@@ -720,237 +520,31 @@ db.books.findOneAndUpdate(
 
 ## Schema Validation
 
-Always recommend schema validation for production collections. MongoDB supports validation using JSON Schema (`$jsonSchema`) or query expression validators, applied during inserts and updates.
+Always recommend schema validation for production collections. For detailed reference on JSON Schema validators, query expression validators, validation levels/actions, polymorphic validation, and best practices, consult `references/schema-validation.md`.
 
-### Creating a Validator with JSON Schema
+Key principles:
+- Use `$jsonSchema` for structure validation and query operators for cross-field rules
+- **Start permissive** (`validationAction: "warn"`, `validationLevel: "moderate"`) then tighten once data is clean
+- Include `title` and `description` on every property for better error messages
+- For polymorphic collections, use `oneOf` with the discriminator field
+- Don't over-constrain — only validate what matters for data integrity
 
+Quick example:
 ```javascript
 db.createCollection("users", {
   validator: {
     $jsonSchema: {
       bsonType: "object",
-      title: "User Validation",
-      required: ["name", "email", "schema_version"],
+      required: ["name", "email"],
       properties: {
         name: { bsonType: "string", description: "User's full name" },
-        email: { bsonType: "string", pattern: "^.+@.+$", description: "Valid email address" },
-        schema_version: { bsonType: "int", minimum: 1 },
-        age: { bsonType: "int", minimum: 0, maximum: 150, description: "Age in years" },
-        status: { enum: ["active", "inactive", "suspended", null], description: "Account status" },
-        addresses: {
-          bsonType: "array",
-          maxItems: 10,
-          items: {
-            bsonType: "object",
-            required: ["street", "city"],
-            properties: {
-              street: { bsonType: "string" },
-              city: { bsonType: "string" },
-              state: { bsonType: "string" },
-              zip: { bsonType: "string", pattern: "^[0-9]{5}(-[0-9]{4})?$" }
-            }
-          }
-        }
+        email: { bsonType: "string", pattern: "^.+@.+$" },
+        status: { enum: ["active", "inactive", "suspended", null] }
       }
     }
   }
 })
 ```
-
-### Supported JSON Schema Keywords
-
-- **Type**: `bsonType` — validates BSON type (`"string"`, `"int"`, `"long"`, `"double"`, `"decimal"`, `"bool"`, `"date"`, `"object"`, `"array"`, `"objectId"`, `"null"`, `"number"` alias for int/long/double/decimal)
-- **Required fields**: `required` — array of field names that must exist
-- **Properties**: `properties` — per-field validation rules
-- **Additional properties**: `additionalProperties` — `false` to reject fields not in `properties`
-- **Numeric range**: `minimum`, `maximum`, `exclusiveMinimum`, `exclusiveMaximum`
-- **String constraints**: `minLength`, `maxLength`, `pattern` (regex)
-- **Array constraints**: `minItems`, `maxItems`, `uniqueItems`, `items` (per-item schema)
-- **Enum**: `enum` — restrict to allowed values
-- **Logical composition**: `allOf`, `anyOf`, `oneOf`, `not`
-- **Metadata**: `title`, `description` — documentation (shown in error messages)
-
-### Specifying Allowed Field Values
-
-Use `enum` for fixed sets of values:
-```javascript
-{ status: { enum: ["draft", "published", "archived"], description: "Document status" } }
-```
-
-Use `minimum`/`maximum` for numeric ranges:
-```javascript
-{ rating: { bsonType: "int", minimum: 1, maximum: 5 } }
-```
-
-Use `pattern` for string format validation:
-```javascript
-{ phone: { bsonType: "string", pattern: "^\\+?[1-9]\\d{1,14}$" } }
-```
-
-### Query Expression Validators
-
-For validations that cannot be expressed in JSON Schema, use query operators:
-
-```javascript
-db.createCollection("sales", {
-  validator: {
-    $and: [
-      { quantity: { $gte: 0 } },
-      { price: { $gte: 0 } },
-      { item: { $type: "string" } },
-      { $expr: { $lte: ["$discountPrice", "$price"] } }
-    ]
-  }
-})
-```
-
-### Combining JSON Schema with Query Conditions
-
-Use `$jsonSchema` alongside query operators for complex rules:
-```javascript
-db.createCollection("orders", {
-  validator: {
-    $and: [
-      {
-        $jsonSchema: {
-          bsonType: "object",
-          required: ["item", "quantity", "price"],
-          properties: {
-            item: { bsonType: "string" },
-            quantity: { bsonType: "int", minimum: 1 },
-            price: { bsonType: "decimal" }
-          }
-        }
-      },
-      { $expr: { $lte: ["$discountPrice", "$price"] } }
-    ]
-  }
-})
-```
-
-### Validation Levels
-
-| Level | Behavior |
-|-------|----------|
-| `"strict"` (default) | Validates all inserts and updates |
-| `"moderate"` | Validates inserts and updates to documents that already satisfy the rules. Skips validation for updates to documents that already violate rules (useful during migration) |
-
-```javascript
-db.runCommand({ collMod: "users", validator: { /* ... */ }, validationLevel: "moderate" })
-```
-
-### Validation Actions
-
-| Action | Behavior |
-|--------|----------|
-| `"error"` (default) | Rejects writes that violate validation rules |
-| `"warn"` | Logs a warning but allows the write to proceed |
-
-```javascript
-db.runCommand({ collMod: "users", validator: { /* ... */ }, validationAction: "warn" })
-```
-
-### Handling Invalid Documents
-
-When adding validation to an existing collection with non-conforming documents:
-
-1. Start with `validationAction: "warn"` to identify violations without blocking writes
-2. Use `validationLevel: "moderate"` so existing invalid documents can still be updated
-3. Fix invalid documents over time
-4. Graduate to `validationLevel: "strict"` and `validationAction: "error"` once clean
-
-### Bypassing Validation
-
-Some operations can bypass validation using `bypassDocumentValidation: true`:
-```javascript
-db.collection.insertOne({ /* invalid doc */ }, { bypassDocumentValidation: true })
-```
-
-Available on: `insert`, `update`, `findAndModify`, `$out`, `$merge`, `mapReduce`. Requires the `bypassDocumentValidation` privilege. Useful for admin/migration scripts.
-
-### Viewing Existing Validation Rules
-
-```javascript
-db.getCollectionInfos({ name: "users" })
-// Returns validator, validationLevel, validationAction in the options field
-```
-
-### Updating Validation Rules
-
-```javascript
-db.runCommand({
-  collMod: "users",
-  validator: { $jsonSchema: { /* new schema */ } },
-  validationLevel: "strict",
-  validationAction: "error"
-})
-```
-
-### Validating Polymorphic Collections
-
-For collections with multiple document types (Polymorphic Pattern), use `oneOf` or conditional validation:
-
-**Using `oneOf`** — each document must match exactly one sub-schema:
-```javascript
-db.createCollection("vehicles", {
-  validator: {
-    $jsonSchema: {
-      bsonType: "object",
-      required: ["type", "make", "model", "year"],
-      properties: {
-        type: { enum: ["car", "truck", "motorcycle"] },
-        make: { bsonType: "string" },
-        model: { bsonType: "string" },
-        year: { bsonType: "int", minimum: 1900 }
-      },
-      oneOf: [
-        {
-          properties: { type: { const: "car" }, numDoors: { bsonType: "int" } },
-          required: ["numDoors"]
-        },
-        {
-          properties: { type: { const: "truck" }, towingCapacityKg: { bsonType: "int" } },
-          required: ["towingCapacityKg"]
-        },
-        {
-          properties: { type: { const: "motorcycle" }, engineCC: { bsonType: "int" } },
-          required: ["engineCC"]
-        }
-      ]
-    }
-  }
-})
-```
-
-**Using `if/then/else`** (MongoDB 5.0+):
-```javascript
-{
-  if: { properties: { type: { const: "car" } } },
-  then: { required: ["numDoors"], properties: { numDoors: { bsonType: "int" } } },
-  else: {
-    if: { properties: { type: { const: "truck" } } },
-    then: { required: ["towingCapacityKg"] }
-  }
-}
-```
-
-### JSON Schema Tips
-
-1. Use `description` fields — they appear in validation error messages, making debugging easier
-2. Use `title` on the top-level schema to identify which validator failed
-3. Set `additionalProperties: false` only when you want strict control — it prevents any fields not listed in `properties`
-4. Arrays of allowed BSON types: `{ bsonType: ["string", "null"] }` — allows either string or null
-5. For optional fields, do not put them in `required` — they are only validated if present
-6. Test validators before production: `db.collection.validate()` checks existing documents against rules
-
-### Schema Validation Best Practices
-
-1. **Start permissive**: `validationAction: "warn"` + `validationLevel: "moderate"` for existing collections
-2. **Tighten gradually**: Move to `"strict"` + `"error"` once data is clean
-3. **Include descriptive metadata**: `title` and `description` on every property
-4. **Validate polymorphic collections**: Use `oneOf` with the discriminator field to enforce per-type rules
-5. **Version your validators**: When using Schema Versioning Pattern, update the validator alongside your application code
-6. **Don't over-constrain**: Only validate what matters for data integrity — overly strict schemas make evolution harder
 
 ---
 
@@ -999,6 +593,42 @@ For older versions, use the **Bucket Pattern** with pre-computed aggregates.
 | Product Catalogs | Attribute, Polymorphic, Subset |
 | Data Warehousing | Slowly Changing Dimensions, Archive, Computed |
 | Multi-entity Lookups | Single Collection, Extended Reference |
+
+---
+
+## Troubleshooting
+
+### Document exceeds 16MB
+**Cause**: An unbounded array is growing without limit.
+1. Identify the array causing growth
+2. Apply the Bucket or Subset pattern to split data into separate documents
+3. Use parent references from the child side instead of storing child references in the parent
+
+### $lookup performance degradation
+**Cause**: Joining data that is always accessed together, or missing indexes on join fields.
+1. Embed frequently-joined fields using the Extended Reference pattern
+2. Verify both collections have indexes on the join fields
+3. Check if collections are sharded — `$lookup` has limitations across shards
+
+### Working set exceeds RAM
+**Cause**: Documents contain large amounts of rarely-accessed data inflating memory usage.
+1. Apply the Subset pattern to separate hot and cold data
+2. Use projection to limit returned fields in queries
+3. Review indexes — each index consumes RAM. Remove unused or redundant indexes
+
+### Write contention on hot documents
+**Cause**: A single document is updated very frequently by concurrent operations.
+1. Separate volatile fields (counters, timestamps) from stable fields into different documents
+2. Use the Approximation pattern for non-critical counters to reduce write frequency
+3. Consider the Bucket pattern to distribute writes across multiple documents
+
+---
+
+## References
+
+For source documentation and further reading, see `references/sources.md`.
+For detailed schema validation guidance, see `references/schema-validation.md`.
+For advanced design patterns (8-15), see `references/advanced-patterns.md`.
 
 ---
 

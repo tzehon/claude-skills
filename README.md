@@ -14,14 +14,19 @@ Reusable domain-expert skills (system prompts) for Claude — usable across Clau
 
 ### Claude.ai (Web / Mobile)
 
-1. Open a [Claude Project](https://claude.ai)
-2. Go to **Project Knowledge**
-3. Upload the skill's `SKILL.md` file, upload the packaged zip, or copy its content to the clipboard and paste into project instructions:
+Upload as a skill (recommended):
+1. Open [Claude.ai](https://claude.ai) and go to **Settings > Capabilities > Skills**
+2. Upload the packaged zip (`./scripts/package-skill.sh mongodb-data-modelling`) or the skill folder
+3. Toggle the skill on — Claude now has the skill's expertise and will activate it automatically based on trigger phrases
+
+Or add to a project as knowledge:
+1. Open a [Claude Project](https://claude.ai) and go to **Project Knowledge**
+2. Upload the skill's `SKILL.md` file, or copy its content to the clipboard and paste into project instructions:
    ```bash
    ./scripts/load-skill.sh mongodb-data-modelling | pbcopy   # macOS
    ./scripts/load-skill.sh mongodb-data-modelling | xclip    # Linux
    ```
-4. Start chatting — Claude now has the skill's expertise
+3. Start chatting — Claude now has the skill's expertise
 
 ### Claude Code (CLI)
 
@@ -55,7 +60,7 @@ system_prompt = Path("skills/mongodb-data-modelling/SKILL.md").read_text()
 
 client = anthropic.Anthropic()
 message = client.messages.create(
-    model="claude-sonnet-4-5-20250929",
+    model="claude-sonnet-4-6",
     max_tokens=8192,
     system=system_prompt,
     messages=[{"role": "user", "content": "Design a data model for ..."}]
@@ -94,7 +99,9 @@ claude-skills/
     └── mongodb-data-modelling/
         ├── SKILL.md             # The skill prompt with YAML frontmatter
         └── references/
-            └── sources.md       # Source URLs and attributions
+            ├── sources.md       # Source URLs and attributions
+            ├── advanced-patterns.md   # Patterns 8-15 (detailed reference)
+            └── schema-validation.md   # Schema validation reference
 ```
 
 ---
@@ -104,9 +111,9 @@ claude-skills/
 1. Create `skills/my-skill/SKILL.md` with YAML frontmatter and the skill prompt:
    ```yaml
    ---
-   name: My Skill
+   name: my-skill
    description: |
-     What the skill does.
+     What the skill does. Use when user asks to [specific tasks].
      Trigger: "phrases that activate this skill"
      Not for: things outside scope
    metadata:
@@ -115,7 +122,7 @@ claude-skills/
      tags: [topic1, topic2]
    ---
    ```
-   Follow with the skill body: role definition, interaction flow, domain knowledge, output format.
+   The `name` must be kebab-case and match the folder name. The `description` must include what the skill does and when to use it (under 1024 characters, no XML tags). Follow with the skill body: role definition, interaction flow, domain knowledge, examples, troubleshooting, output format.
 
 2. Optionally create `skills/my-skill/references/` for source URLs or supporting materials
 
