@@ -33,7 +33,7 @@ if [ $# -lt 1 ]; then
 fi
 
 SKILL_NAME="$1"
-SKILL_FILE="$SKILLS_DIR/$SKILL_NAME/$SKILL_NAME.md"
+SKILL_FILE="$SKILLS_DIR/$SKILL_NAME/SKILL.md"
 
 if [ ! -f "$SKILL_FILE" ]; then
   echo "Error: Skill '$SKILL_NAME' not found at $SKILL_FILE" >&2

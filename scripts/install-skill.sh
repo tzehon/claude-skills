@@ -47,7 +47,7 @@ if [ ! -d "$SKILL_DIR" ]; then
 fi
 
 # Find the main skill prompt file
-SKILL_FILE="$SKILL_DIR/$SKILL_NAME.md"
+SKILL_FILE="$SKILL_DIR/SKILL.md"
 if [ ! -f "$SKILL_FILE" ]; then
   echo "Error: Skill prompt file not found at $SKILL_FILE"
   exit 1
