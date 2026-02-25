@@ -37,6 +37,18 @@ Scripts locate the prompt file via `$SKILLS_DIR/$SKILL_NAME/SKILL.md`, so this n
 3. Update the Available Skills table in the top-level `README.md`
 4. Test: `./scripts/load-skill.sh <name>` to verify content renders correctly
 
+## Skill Authoring Best Practices
+
+Based on [The Complete Guide to Building Skills for Claude](https://resources.anthropic.com/hubfs/The-Complete-Guide-to-Building-Skill-for-Claude.pdf):
+
+- **Keep under 5,000 words** — skill body excluding frontmatter. Move reference material to `references/` if nearing the limit
+- **3-level progressive disclosure** — SKILL.md (core prompt) → references/ (supporting detail) → scripts/ (automation)
+- **Include trigger phrases** in the frontmatter `description` so Claude knows when to activate the skill
+- **Include negative triggers** ("Not for: ...") to prevent false activation
+- **Use concrete examples** over abstract rules — show don't tell
+- **One domain per skill** — don't combine unrelated expertise into a single skill
+- **Test the skill prompt in isolation** — it should work as a standalone system prompt with no external dependencies
+
 ## Architecture Notes
 
 - Skills use the official SKILL.md format with YAML frontmatter — compatible with Claude.ai skill upload, Claude Code, and the Claude API
