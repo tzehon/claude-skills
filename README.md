@@ -83,6 +83,7 @@ All scripts list available skills when run with no arguments.
 
 ```
 claude-skills/
+├── CLAUDE.md
 ├── README.md
 ├── scripts/
 │   ├── load-skill.sh           # Output skill content to stdout
