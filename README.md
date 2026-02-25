@@ -19,7 +19,7 @@ Reusable domain-expert skills (system prompts) for Claude — usable across Clau
 3. Upload the skill's `.md` file, or copy its content to the clipboard and paste into project instructions:
    ```bash
    ./scripts/load-skill.sh mongodb-data-modelling | pbcopy   # macOS
-   ./scripts/load-skill.sh mongodb-data-modelling | xclip     # Linux
+   ./scripts/load-skill.sh mongodb-data-modelling | xclip    # Linux
    ```
 4. Start chatting — Claude now has the skill's expertise
 
