@@ -49,7 +49,7 @@ Then start a conversation:
 ../../scripts/install-skill.sh mongodb-data-modelling /path/to/project
 ```
 
-Then use: `/mongodb-data <your requirements>`
+Then use: `/mongodb-data-modelling <your requirements>`
 
 ### Claude API
 

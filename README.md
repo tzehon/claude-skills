@@ -35,13 +35,13 @@ Install a skill as a custom slash command in your project:
 ./scripts/install-skill.sh mongodb-data-modelling /path/to/your/project
 ```
 
-This creates `.claude/commands/mongodb-data.md` in your project. Then use it in Claude Code:
+This creates `.claude/commands/mongodb-data-modelling.md` in your project. Then use it in Claude Code:
 
 ```
-/mongodb-data Design a schema for an e-commerce platform with products, orders, and reviews
+/mongodb-data-modelling Design a schema for an e-commerce platform with products, orders, and reviews
 ```
 
-Everything after the command name is passed as context to Claude. You can also invoke `/mongodb-data` with no arguments and Claude will ask you clarifying questions.
+Everything after the command name is passed as context to Claude. You can also invoke `/mongodb-data-modelling` with no arguments and Claude will ask you clarifying questions.
 
 ### Claude API / SDKs
 

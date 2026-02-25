@@ -2,15 +2,15 @@
 # Install a skill as a Claude Code slash command in a target project.
 #
 # Usage:
-#   ./scripts/install-claude-code.sh <skill-name> [target-project-dir] [--symlink]
+#   ./scripts/install-skill.sh <skill-name> [target-project-dir] [--symlink]
 #
 # Options:
 #   --symlink   Create a symlink instead of copying (keeps skill updated with repo)
 #
 # Examples:
-#   ./scripts/install-claude-code.sh mongodb-data-modelling /path/to/my-project
-#   ./scripts/install-claude-code.sh mongodb-data-modelling /path/to/my-project --symlink
-#   ./scripts/install-claude-code.sh mongodb-data-modelling  # uses current directory
+#   ./scripts/install-skill.sh mongodb-data-modelling /path/to/my-project
+#   ./scripts/install-skill.sh mongodb-data-modelling /path/to/my-project --symlink
+#   ./scripts/install-skill.sh mongodb-data-modelling  # uses current directory
 
 set -euo pipefail
 
@@ -57,8 +57,8 @@ fi
 COMMANDS_DIR="$TARGET_DIR/.claude/commands"
 mkdir -p "$COMMANDS_DIR"
 
-# Derive a short command name (strip common suffixes)
-COMMAND_NAME="$(echo "$SKILL_NAME" | sed 's/-modelling$//' | sed 's/-pattern$//' | sed 's/-skill$//')"
+# Use the skill name as the command name
+COMMAND_NAME="$SKILL_NAME"
 DEST_FILE="$COMMANDS_DIR/$COMMAND_NAME.md"
 
 if [ "$USE_SYMLINK" = true ]; then
