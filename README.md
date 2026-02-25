@@ -6,7 +6,7 @@ Reusable domain-expert skills (system prompts) for Claude — usable across Clau
 
 | Skill | Description |
 |-------|-------------|
-| [mongodb-data-modelling](skills/mongodb-data-modelling/) | MongoDB schema design expert — 15+ design patterns, anti-pattern avoidance, and the 3-phase schema design process |
+| [mongodb-data-modelling](skills/mongodb-data-modelling/) | MongoDB schema design expert — 15 design patterns (Computed, Approximation, Attribute, Bucket, Subset, Extended Reference, Outlier, Document Versioning, Schema Versioning, Polymorphic, Inheritance, Preallocation, Slowly Changing Dimensions, Archive, Single Collection), 5 tree structures, anti-pattern avoidance, schema validation, and the 3-phase design process. [Sources](skills/mongodb-data-modelling/references/sources.md) |
 
 ---
 
@@ -16,7 +16,7 @@ Reusable domain-expert skills (system prompts) for Claude — usable across Clau
 
 1. Open a [Claude Project](https://claude.ai)
 2. Go to **Project Knowledge**
-3. Upload the skill's `.md` file, or copy its content to the clipboard and paste into project instructions:
+3. Upload the skill's `SKILL.md` file, upload the packaged zip, or copy its content to the clipboard and paste into project instructions:
    ```bash
    ./scripts/load-skill.sh mongodb-data-modelling | pbcopy   # macOS
    ./scripts/load-skill.sh mongodb-data-modelling | xclip    # Linux
@@ -51,7 +51,7 @@ Load the skill as a system prompt:
 import anthropic
 from pathlib import Path
 
-system_prompt = Path("skills/mongodb-data-modelling/mongodb-data-modelling.md").read_text()
+system_prompt = Path("skills/mongodb-data-modelling/SKILL.md").read_text()
 
 client = anthropic.Anthropic()
 message = client.messages.create(
@@ -91,21 +91,32 @@ claude-skills/
 │   └── package-all.sh          # Package all skills
 └── skills/
     └── mongodb-data-modelling/
-        ├── README.md            # Skill docs and sources
-        └── mongodb-data-modelling.md  # The skill prompt
+        ├── SKILL.md             # The skill prompt with YAML frontmatter
+        └── references/
+            └── sources.md       # Source URLs and attributions
 ```
 
 ---
 
 ## Creating a New Skill
 
-1. Create `skills/my-skill/my-skill.md` — the skill prompt containing:
-   - Role definition and expertise area
-   - Interaction flow (what to ask, how to respond)
-   - Domain knowledge, rules, and best practices
-   - Output format specification
+1. Create `skills/my-skill/SKILL.md` with YAML frontmatter and the skill prompt:
+   ```yaml
+   ---
+   name: My Skill
+   description: |
+     What the skill does.
+     Trigger: "phrases that activate this skill"
+     Not for: things outside scope
+   metadata:
+     version: "1.0"
+     author: your-name
+     tags: [topic1, topic2]
+   ---
+   ```
+   Follow with the skill body: role definition, interaction flow, domain knowledge, output format.
 
-2. Create `skills/my-skill/README.md` with usage instructions and sources
+2. Optionally create `skills/my-skill/references/` for source URLs or supporting materials
 
 3. Test across surfaces — upload to Claude.ai, install in Claude Code, use as API system prompt
 
