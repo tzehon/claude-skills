@@ -122,4 +122,4 @@ claude-skills/
 
 4. Test across surfaces — upload to Claude.ai, install in Claude Code, use as API system prompt
 
-4. Package: `./scripts/package-skill.sh my-skill`
+5. Package: `./scripts/package-skill.sh my-skill`
