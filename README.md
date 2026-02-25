@@ -6,7 +6,7 @@ Reusable domain-expert skills (system prompts) for Claude — usable across Clau
 
 | Skill | Description |
 |-------|-------------|
-| [mongodb-data-modelling](skills/mongodb-data-modelling/) | MongoDB schema design expert — 15 design patterns (Computed, Approximation, Attribute, Bucket, Subset, Extended Reference, Outlier, Document Versioning, Schema Versioning, Polymorphic, Inheritance, Preallocation, Slowly Changing Dimensions, Archive, Single Collection), 5 tree structures, anti-pattern avoidance, schema validation, and the 3-phase design process. [Sources](skills/mongodb-data-modelling/references/sources.md) |
+| [mongodb-data-modelling](skills/mongodb-data-modelling/) | MongoDB schema design expert — 15 design patterns, 5 tree structures, anti-pattern avoidance, schema validation, and the 3-phase design process. [Sources](skills/mongodb-data-modelling/references/sources.md) |
 
 ---
 
@@ -118,6 +118,8 @@ claude-skills/
 
 2. Optionally create `skills/my-skill/references/` for source URLs or supporting materials
 
-3. Test across surfaces — upload to Claude.ai, install in Claude Code, use as API system prompt
+3. Update the Available Skills table above
+
+4. Test across surfaces — upload to Claude.ai, install in Claude Code, use as API system prompt
 
 4. Package: `./scripts/package-skill.sh my-skill`
