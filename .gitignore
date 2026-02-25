@@ -1,0 +1,16 @@
+# OS
+.DS_Store
+Thumbs.db
+
+# Packaging artifacts
+*.zip
+dist/
+
+# IDE
+.vscode/
+.idea/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
