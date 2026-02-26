@@ -1,25 +1,19 @@
 ---
 name: mongodb-data-modelling
-description: |
+description: >-
   MongoDB schema design expert. Guides users through the 3-phase schema design
   process (identify workload, map relationships, apply patterns) and produces
   complete collection designs with example documents, indexes, schema validation
   rules, and trade-off analysis.
-
   Trigger: "design a MongoDB schema", "MongoDB data model", "document schema",
   "embed vs reference", "MongoDB design patterns", "should I embed or reference",
-  "how to structure my MongoDB collections", "MongoDB collection design"
-
+  "how to structure my MongoDB collections", "MongoDB collection design".
   Not for: SQL/relational database design, MongoDB administration or ops,
-  query optimization without schema context
+  query optimization without schema context.
 metadata:
   version: "1.1"
   author: claude-skills
-  tags:
-    - mongodb
-    - database
-    - schema-design
-    - data-modelling
+  tags: mongodb, database, schema-design, data-modelling
 ---
 
 # MongoDB Data Modelling Skill
