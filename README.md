@@ -7,6 +7,7 @@ Reusable domain-expert skills (system prompts) for Claude — usable across Clau
 | Skill | Description |
 |-------|-------------|
 | [mongodb-data-modelling](skills/mongodb-data-modelling/) | MongoDB schema design expert — 15 design patterns, 5 tree structures, anti-pattern avoidance, schema validation, and the 3-phase design process. [Sources](skills/mongodb-data-modelling/references/sources.md) |
+| [mongodb-presentation](skills/mongodb-presentation/) | MongoDB presentation expert — creates brand-compliant Google Slides and PowerPoint presentations using the official template and style guide, with programmatic generation via python-pptx or Google Slides API. [Sources](skills/mongodb-presentation/references/sources.md) |
 
 ---
 
@@ -96,12 +97,18 @@ claude-skills/
 │   ├── package-skill.sh        # Package one skill into a zip
 │   └── package-all.sh          # Package all skills
 └── skills/
-    └── mongodb-data-modelling/
-        ├── SKILL.md             # The skill prompt with YAML frontmatter
+    ├── mongodb-data-modelling/
+    │   ├── SKILL.md             # The skill prompt with YAML frontmatter
+    │   └── references/
+    │       ├── sources.md       # Source URLs and attributions
+    │       ├── advanced-patterns.md   # Patterns 8-15 (detailed reference)
+    │       └── schema-validation.md   # Schema validation reference
+    └── mongodb-presentation/
+        ├── SKILL.md             # Presentation skill with YAML frontmatter
         └── references/
             ├── sources.md       # Source URLs and attributions
-            ├── advanced-patterns.md   # Patterns 8-15 (detailed reference)
-            └── schema-validation.md   # Schema validation reference
+            ├── style-guide-rules.md   # Complete brand specifications
+            └── slide-layouts.md       # Full catalog of approved slide layouts
 ```
 
 ---
